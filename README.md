@@ -8,18 +8,18 @@ This guide helps you to handle adding custom card from your Flutter App to Apple
 
 🔹 Prerequisites
 
-Apple Developer Account ($99/year).
+Apple Developer Account.
 
 A Pass Type ID created in the Apple Developer portal "https://developer.apple.com/account/resources/identifiers/passTypeId"
 .
 
 Certificates:
 
-Pass Type Certificate (for signing passes).
+1. Pass Type Certificate (for signing passes).
 
-Apple WWDR certificate.
+2. Apple WWDR certificate.
 
-You’ll need both installed on your server.
+3. You’ll need both installed on your server.
 
 ---
 
@@ -117,6 +117,51 @@ openssl smime -binary -sign \
   Content-Type: application/vnd.apple.pkpass
 ```
 
+---
 
+## 2️⃣ Flutter Developer Guide (Add Pass to Wallet)
 
+### 🔹 Dependencies
+
+1. flutter_passkit (iOS only) ("https://pub.dev/packages/flutter_passkit")
+2. Or fallback: download .pkpass and open with url_launcher.
+
+### 🔹 Implementation
+
+```dart
+  import 'package:flutter_passkit/flutter_passkit.dart';
+
+class WalletService {
+  Future<void> addMedicalCard(String userId) async {
+    //! Backend endpoint serving the signed pkpass file
+    final url = "https://api.yourserver.com/api/pass/medical-card/$userId";
+
+    final success = await FlutterPasskit.addPass(url);
+
+    if (success) {
+      print("Medical card added to Wallet");
+    } else {
+      print("Failed to add pass");
+    }
+  }
+}
+
+```
+
+### 🔹 Alternative (without plugin)
+If you don’t want flutter_passkit, just download the .pkpass and open it:
+
+```dart
+import 'package:url_launcher/url_launcher.dart';
+
+Future<void> openPass(String url) async {
+  if (await canLaunchUrl(Uri.parse(url))) {
+    await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+  }
+}
+```
+
+### iOS will automatically show the “Add to Wallet” sheet.
+
+---
 
